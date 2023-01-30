@@ -1,12 +1,12 @@
 package com.codeup.repository;
 
-
-import com.codeup.models.Post;
+import com.codeup.models.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface PostRepository  extends JpaRepository<Post, Long> {
+public interface UserRepository extends JpaRepository<User, Long> {
 
-    Post findByTitle(String title);
+    User findByUsername(String username);
+
 }

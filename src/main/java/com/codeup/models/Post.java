@@ -1,11 +1,11 @@
 package com.codeup.models;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
 
-import javax.persistence.*;
-import java.io.Serializable;
+import lombok.Data;
+
+
+
 
 @Entity
 @Data
@@ -56,6 +56,19 @@ public class Post {
 
     public void setBody(String body) {
         this.body = body;
+    }
+
+
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }
 

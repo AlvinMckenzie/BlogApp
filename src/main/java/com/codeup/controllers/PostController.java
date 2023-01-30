@@ -2,56 +2,142 @@ package com.codeup.controllers;
 
 import com.codeup.repository.PostRepository;
 import com.codeup.models.Post;
+import com.codeup.services.PostService;
+import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 
 @Controller
+@NoArgsConstructor
 public class PostController {
 
-    private final PostRepository postDao;
+    @Autowired
+    private PostService postServ;
 
-    public PostController(PostRepository postDao) {
-        this.postDao = postDao;
+    public PostController(PostService postServ) {
+
+        this.postServ = postServ;
+
     }
 
-    @RequestMapping(path = "/posts")
-    @ResponseBody
-    public String posts() {
-        return "posts index page";
+    @GetMapping("/profile")
+    public String profileShowUserPosts(Model model) {
+
+        model.addAttribute("posts", postServ.profileShowUserPosts());
+
+        return "/posts/profile";
+
     }
 
-    @RequestMapping(path = "/posts/index/{id}", method = RequestMethod.GET)
-    @ResponseBody
-    public String viewPost(@PathVariable long id) {
-        return "view the form for creating post" + id;
+    @PostMapping("/profile")
+    public String editThis(@ModelAttribute Post post, @RequestParam(name="button") long id) {
+
+        return "redirect:/edit/" + id;
+
     }
 
-    @RequestMapping(path = "/posts/create", method = RequestMethod.GET)
-    public String createPost() {
-        return "/posts/create";
-    }
+    @GetMapping("/create")
+    public String createPostForm(Model model) {
 
-    @PostMapping("/posts/create")
-    public void createPost(@RequestParam(name = "title") String title, @RequestParam(name = "body") String body, HttpServletResponse resp, HttpServletRequest req) throws IOException {
-        System.out.println(title);
-        System.out.println(body);
-        postDao.findAll();
-        Post post = new Post(title, body);
-        System.out.println(post.getBody());
-
-        postDao.save(post);
-        resp.sendRedirect("/posts/show");
-    }
-
-    @GetMapping("/posts/{id}/edit")
-    public String index(Model model) {
         model.addAttribute("post", new Post());
-        return "posts/show";
+
+        return "/posts/create";
+
     }
+
+    @PostMapping("/create")
+    public String createPost(@ModelAttribute Post post) {
+
+        postServ.createPost(post);
+
+        return "redirect:/posts";
+
+    }
+
+    @GetMapping("/posts")
+    public String show(Model model) {
+
+        model.addAttribute("posts", postServ.showPosts());
+
+        return "/posts/index";
+
+    }
+
+    @PostMapping("/posts")
+    public String create(@ModelAttribute Post post, @RequestParam(name="button") long id) {
+
+        return "redirect:/show/" + id;
+
+    }
+
+    @GetMapping("/show/{id}")
+    public String showById(@PathVariable long id, Model model) {
+
+        model.addAttribute("post", postServ.showById(id));
+
+        return "posts/show";
+
+    }
+
+    @GetMapping("/edit/{id}")
+    public String editPostById(@PathVariable long id, Model model) {
+
+        model.addAttribute("post", postServ.editPostById(id));
+
+        return "posts/edit";
+
+    }
+
+    @PostMapping ("/edit")
+    public String editPost(@ModelAttribute Post post) {
+
+        postServ.editPost(post);
+
+        return "redirect:/profile";
+
+    }
+
+    @PostMapping("/delete")
+    public String deletePostById(@RequestParam (name="button") long id) {
+
+        postServ.deletePostById(id);
+
+        return "redirect:/profile";
+
+    }
+
+    @RequestMapping(path = "/roll-dice", method = RequestMethod.GET)
+    public String rollDice() {
+        return "roll-dice";
+    }
+
+    @GetMapping(path = "/roll-dice/{guess}")
+    public String showGuess(@PathVariable int guess, Model model) {
+
+        int random = (int) (Math.random() * 6) + 1;
+
+        String message;
+
+        boolean checkInput = guess == random;
+        if (checkInput) {
+            message = "You guessed correctly!";
+        } else {
+            message = "You guessed incorrectly!";
+        }
+
+        model.addAttribute("random", random);
+        model.addAttribute("guess", guess);
+        model.addAttribute("checkInput", message);
+
+        return "roll-dice-n";
+
+    }
+
 }
